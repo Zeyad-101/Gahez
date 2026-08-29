@@ -9,7 +9,6 @@ Pick a role. Answer five questions, one at a time. Get scored, specific feedback
 [**Try it live →**](https://gahez-zeta.vercel.app/)
 
 [![Live](https://img.shields.io/badge/live-gahez--zeta.vercel.app-1B362D?style=flat-square)](https://gahez-zeta.vercel.app/)
-[![No backend](https://img.shields.io/badge/backend-none-26493D?style=flat-square)](#architecture)
 [![License: MIT](https://img.shields.io/badge/license-MIT-B8863C?style=flat-square)](LICENSE)
 
 </div>
