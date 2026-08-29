@@ -1,0 +1,19 @@
+{
+  "name": "Gahez? — Interview practice",
+  "short_name": "Gahez?",
+  "description": "A calm, role-tailored five-question interview practice with concrete coaching feedback after every answer.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F3F4F1",
+  "theme_color": "#26493D",
+  "icons": [
+    {
+      "src": "assets/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

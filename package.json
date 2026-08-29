@@ -1,0 +1,14 @@
+{
+  "name": "interview-trainer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A calm, role-tailored interview practice web app with concrete coaching feedback.",
+  "scripts": {
+    "test": "node --test tests/storage.test.js tests/ai.test.js tests/interview.test.js tests/smoke.test.js",
+    "lint": "node -e \"['js/storage.js','js/ai.js','js/interview.js','js/app.js'].forEach(f=>{require('node:child_process').execSync('node --check '+f,{stdio:'inherit'})});\"",
+    "check": "npm run lint && npm test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
