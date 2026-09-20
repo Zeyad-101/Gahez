@@ -1,90 +1,79 @@
-# Gahez?
+<div align="center">
 
-A calm, role-tailored five-question interview practice with concrete coaching feedback after every answer. Pick a role, get one question at a time, see what you did well, what to improve, and a worked example.
+<img src="assets/logo.png" alt="Gahez logo" width="140">
 
-![setup](screenshots/01-setup.png)
+# Gahez
 
-## Highlights
+**Interview practice that adapts to you.**
 
-- **Role-tailored questions** — PM, designer, frontend, sales, marketing, ops, finance, HR, and more. Each role has its own question bank that draws from real day-to-day work, not generic STAR.
-- **Concrete coaching** — five scored categories (relevance, clarity, structure, specificity, confidence) plus a worked example answer and likely follow-up questions.
-- **Bring your own key** — use Puter for free, or paste your own API key for Anthropic Claude, OpenAI, or Google Gemini. Keys are kept in the browser only; nothing is stored on a server because there is no server.
-- **Works offline once loaded** — no analytics, no trackers, no CDN scripts beyond what is needed to reach the AI provider you choose.
-- **Mobile / tablet / laptop / desktop** — the layout adapts; controls are 44–48px on touch devices; the keyboard `Ctrl+Enter` submits answers.
+Pick a role. Answer five questions, one at a time. Get scored, specific feedback after each one — not generic encouragement.
 
-## Quick start
+[**Try it live →**](https://gahez-zeta.vercel.app/)
 
-It's a static site — no build step.
+[![Live](https://img.shields.io/badge/live-gahez--zeta.vercel.app-1B362D?style=flat-square)](https://gahez-zeta.vercel.app/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-B8863C?style=flat-square)](LICENSE)
 
-```sh
-# clone
-git clone https://github.com/Zeyad-101/gahez.git
-cd gahez
+</div>
 
-# serve locally (any static server works)
-python -m http.server 8000
-# or
-npx serve .
-```
+![Setup screen](screenshots/01-setup.png)
 
-Open `http://localhost:8000`. That's it.
+---
 
-### Optional: use Puter (no API key needed)
+## What it does
 
-Puter is the default provider and is free for most sessions. Nothing to configure.
+- **Questions tailored to your role** — PM, design, frontend, sales, marketing, ops, finance, HR, and more, each with its own question bank pulled from real day-to-day work rather than generic STAR prompts.
+- **Feedback you can act on** — every answer is scored across five categories (relevance, clarity, structure, specificity, confidence), paired with a worked example answer and the follow-up questions an interviewer would likely ask next.
+- **No account required** — Puter powers the AI by default at no cost to you. Prefer a different model? Add your own Anthropic, OpenAI, or Gemini key in Settings.
+- **Nothing leaves your browser that doesn't have to** — no backend, no analytics, no tracking scripts. Any key you add stays in the browser and is sent only to the provider you chose.
+- **Built for whatever screen you're on** — the layout adjusts across phone, tablet, and desktop, touch targets are sized for fingers rather than cursors, and `Ctrl+Enter` submits an answer from the keyboard.
 
-### Optional: bring your own key
+## Bring your own key
 
-Click the gear icon in the topbar → pick a provider → paste your key. The "Remember on this device" checkbox is **off by default** — the key lives only in this tab and is cleared when you close it.
+Puter needs no setup and works out of the box. Want a different model? Click the gear icon, pick a provider, paste in a key. "Remember on this device" is off by default — leave it that way and the key only lives for the current tab.
 
-## Mock mode (no network)
+## Mock mode
 
-Add `?mock=1` to the URL to use the built-in mock evaluator. Useful for trying the app, taking screenshots, or running tests without spending API credits.
-
-## Run the tests
-
-```sh
-npm install       # (no deps, but creates node_modules so the runner is local)
-npm test          # 35 tests
-npm run lint      # node --check on every script
-npm run check     # both
-```
-
-The test suite covers storage, AI settings, session lifecycle, prompt parsing, and end-to-end script boot. No flaky network tests; everything runs offline in `node --test`.
+Add `?mock=1` to the URL to try the interface with canned responses instead of live AI calls — a quick look around without touching your API usage.
 
 ## Architecture
 
-Four classic scripts, no build step:
+A static site, four scripts, no build step:
 
 | File | Role |
 |---|---|
-| `index.html` | The whole UI, screen templates, dialogs |
-| `css/styles.css` | All design tokens, themes, responsive rules |
-| `js/storage.js` | `localStorage` (provider, theme) + `sessionStorage` (key, draft) |
-| `js/ai.js` | Provider registry, mock + real evaluators, prompt-injection-safe prompts |
-| `js/interview.js` | Session state machine, scoring, summary |
-| `js/app.js` | DOM rendering, screen routing, dialogs, theme toggle, event wiring |
+| `index.html` | UI markup, screen templates, dialogs |
+| `css/styles.css` | design tokens, themes, responsive layout |
+| `js/storage.js` | `localStorage` (provider, theme) and `sessionStorage` (key, draft answer) |
+| `js/ai.js` | provider routing, prompt construction, response parsing |
+| `js/interview.js` | session state, scoring, summary |
+| `js/app.js` | rendering, screen routing, dialogs, event handling |
 
-Namespaces: `InterviewStorage`, `InterviewAI`, `InterviewSession`, `InterviewApp`.
+Each file exposes one namespace — `InterviewStorage`, `InterviewAI`, `InterviewSession`, `InterviewApp` — and only `ai.js` knows an AI provider exists. Session logic and the UI layer never touch a raw provider response.
+
+The project carries an automated test suite covering storage, settings validation, session lifecycle, and response parsing, plus lint checks on every script.
 
 ## Security posture
 
-This is a static, no-backend app. The threat model is "what could a malicious page or compromised extension do to a user on this origin?"
+This is a static, no-backend app, so the relevant question is what a malicious page or compromised browser extension could do on this origin.
 
-- **Strict CSP** — no `unsafe-inline` for scripts, no third-party scripts except the Puter SDK, no `eval` / `new Function` / `document.write`.
-- **API keys** — `sessionStorage` by default, `localStorage` only when the user explicitly opts in. Never sent to anything but the provider the user selected.
-- **Prompt-injection defense** — every user-controlled value (job title, question text, answer) is wrapped in `<<<UNTRUSTED_*>>>` delimiters; the model is told to treat those blocks as data, not instructions.
-- **XSS surface** — all user data is rendered via `textContent` or programmatic DOM construction. Zero `innerHTML` writes of user data.
-- **Referrer policy** — `strict-origin-when-cross-origin`. The user's prompt is not leaked via `Referer` to AI providers.
-- **Permissions-Policy** — denies camera, microphone, geolocation, USB, payment, Bluetooth, MIDI, and friends. The app doesn't need any of them.
-- **No third-party trackers, no analytics, no cookies.**
+- **Strict CSP** — no inline scripts, no third-party scripts beyond the Puter SDK, no `eval` or `document.write`.
+- **API keys** stay in `sessionStorage` unless you explicitly opt into `localStorage`, and are never sent anywhere but the provider you selected.
+- **Prompt-injection handling** — job titles, questions, and answers are wrapped in delimiters that tell the model to treat them as data, not instructions.
+- **No `innerHTML` writes of user or AI-generated text** — everything is rendered through `textContent` or built as DOM nodes directly, which rules out script injection through a malformed response.
+- **Referrer-Policy** set to `strict-origin-when-cross-origin`, so your prompt text isn't leaked to providers through the `Referer` header.
+- **Permissions-Policy** denies camera, microphone, geolocation, and everything else the app has no use for.
+- No trackers, no analytics, no cookies.
 
-What this does **not** protect against: a compromised browser extension running in the same origin, a compromised device, or social engineering of the user into pasting their key into a phishing site. The key, when persisted, is only as safe as the browser and device.
+What this doesn't cover: a compromised browser extension running on the same origin, a compromised device, or a phishing page that convinces you to paste your key somewhere else. A key you choose to persist is only as safe as the browser and device it's stored on.
 
 ## Adding a new role
 
-Edit `js/ai.js`. Find `roleKeywords` and add an entry, then add a matching key in `roleBank` with three to five `(topic, question)` pairs. No other code changes needed.
+Open `js/ai.js`, find `roleKeywords`, and add an entry there. Then add a matching set of three to five `(topic, question)` pairs under `roleBank`. Nothing else needs to change.
 
-## License
+---
 
-MIT — see [LICENSE](LICENSE).
+<div align="center">
+
+MIT — see [LICENSE](LICENSE)
+
+</div>

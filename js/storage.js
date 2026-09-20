@@ -4,8 +4,6 @@
   const themeKey = 'interview-trainer.theme';
   const draftKey = 'interview-trainer.draft';
 
-  // sessionStorage is not always available (private mode, sandboxed iframes).
-  // Fall back to a no-op shim so callers can still call setItem/removeItem.
   function safeSession() {
     try {
       const probe = '__probe__';
@@ -20,7 +18,6 @@
   const session = safeSession();
 
   root.InterviewStorage = {
-    // ----- Provider (localStorage; not sensitive) -----
     getProvider() {
       const value = root.localStorage.getItem(providerKey);
       return value || 'puter';
@@ -29,13 +26,10 @@
       root.localStorage.setItem(providerKey, String(provider || 'puter'));
     },
 
-    // ----- API key (sessionStorage by default; localStorage only when explicitly persisted) -----
     getByokKey() {
       const persisted = root.localStorage.getItem(byokKeyName);
       if (persisted) {
-        // Mirror to sessionStorage so the current tab can keep using it without
-        // round-tripping localStorage on every request.
-        try { session.setItem(byokKeyName, persisted); } catch (error) { /* private mode */ }
+        try { session.setItem(byokKeyName, persisted); } catch (error) {  }
         return persisted;
       }
       return session.getItem(byokKeyName) || '';
@@ -43,7 +37,7 @@
     saveByokKey(key, options) {
       const value = String(key || '').trim();
       if (!value) { this.clearByokKey(); return; }
-      try { session.setItem(byokKeyName, value); } catch (error) { /* private mode */ }
+      try { session.setItem(byokKeyName, value); } catch (error) {  }
       if (options && options.persist) {
         root.localStorage.setItem(byokKeyName, value);
       } else {
@@ -51,11 +45,10 @@
       }
     },
     clearByokKey() {
-      try { session.removeItem(byokKeyName); } catch (error) { /* private mode */ }
+      try { session.removeItem(byokKeyName); } catch (error) {  }
       root.localStorage.removeItem(byokKeyName);
     },
 
-    // ----- Theme (localStorage; not sensitive) -----
     getTheme() {
       const value = root.localStorage.getItem(themeKey);
       return ['auto', 'light', 'dark'].includes(value) ? value : 'auto';
@@ -65,16 +58,15 @@
       root.localStorage.setItem(themeKey, value);
     },
 
-    // ----- Draft answer (sessionStorage only; lost when tab closes) -----
     getDraft() {
       try { return session.getItem(draftKey) || ''; } catch (error) { return ''; }
     },
     saveDraft(text) {
       const value = String(text || '');
-      try { session.setItem(draftKey, value); } catch (error) { /* private mode */ }
+      try { session.setItem(draftKey, value); } catch (error) {  }
     },
     clearDraft() {
-      try { session.removeItem(draftKey); } catch (error) { /* private mode */ }
+      try { session.removeItem(draftKey); } catch (error) {  }
     }
   };
 }(globalThis));

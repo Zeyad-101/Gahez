@@ -2,7 +2,7 @@
   const $ = (selector, base = document) => base.querySelector(selector);
   const $$ = (selector, base = document) => Array.from(base.querySelectorAll(selector));
   const PROVIDER_LABELS = { puter: 'Puter', gemini: 'Gemini', openai: 'OpenAI', claude: 'Claude' };
-  const RING_CIRCUMFERENCE = 326.7; // 2π × 52
+  const RING_CIRCUMFERENCE = 326.7;
   const CATEGORY_DESCRIPTIONS = {
     relevance:   'How directly your answer addresses the question',
     clarity:     'How easy your answer is to follow',
@@ -45,8 +45,6 @@
   };
   const scoreLabel = (score) => SCORE_LABELS.find((item) => score >= item.min);
 
-  /* ---------- Screen routing ---------- */
-
   function showScreen(name) {
     $$('[data-screen]').forEach((element) => {
       element.classList.toggle('is-active', element.dataset.screen === name);
@@ -64,8 +62,6 @@
     const el = $('[data-role="top-context"]');
     el.textContent = text || '';
   }
-
-  /* ---------- Theme ---------- */
 
   const THEME_ORDER = ['auto', 'light', 'dark'];
   const THEME_GLYPHS = { auto: '◐', light: '☀', dark: '☾' };
@@ -106,8 +102,6 @@
     chip.setAttribute('aria-label', 'AI provider: ' + (PROVIDER_LABELS[current.provider] || 'Puter') + '. Click to change.');
   }
 
-  /* ---------- Toast ---------- */
-
   function toast(message, kind) {
     const region = $('[data-role="toast-region"]');
     if (!region) return;
@@ -119,8 +113,6 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.remove(), 3200);
   }
-
-  /* ---------- Confirmation dialog ---------- */
 
   function confirmDialog(title, message) {
     return new Promise((resolve) => {
@@ -141,8 +133,6 @@
     if (dialog.open) dialog.close();
     if (confirmResolver) { confirmResolver(result); confirmResolver = null; }
   }
-
-  /* ---------- Interview screen ---------- */
 
   function renderInterview() {
     const session = root.InterviewSession.getSession();
@@ -173,12 +163,15 @@
     const input = $('[data-role="answer-input"]');
     const draft = root.InterviewStorage.getDraft();
     input.value = (index === session.currentIndex) ? draft : '';
-    $('[data-role="word-count"]').textContent = words(input.value) + ' word' + (words(input.value) === 1 ? '' : 's');
+    const initialCount = words(input.value);
+    const countEl = $('[data-role="word-count"]');
+    countEl.textContent = initialCount + ' word' + (initialCount === 1 ? '' : 's');
+    countEl.classList.toggle('is-optimal', initialCount >= 30 && initialCount <= 150);
+    countEl.classList.toggle('is-short', initialCount > 0 && initialCount < 30);
+    countEl.classList.toggle('is-long', initialCount > 150);
     $('[data-role="answer-error"]').textContent = '';
     input.focus();
   }
-
-  /* ---------- Evaluation screen ---------- */
 
   function list(items) {
     return items.map((item) => {
@@ -228,6 +221,19 @@
     scoreLabelEl.textContent = labelInfo.text;
     scoreLabelEl.className = 'score-label ' + labelInfo.className;
 
+    const salaryEl = $('[data-role="salary-estimate"]');
+    if (evaluation.salary_range && evaluation.salary_range.min >= 0) {
+      const cur = evaluation.salary_range.currency || 'EGP';
+      const minStr = evaluation.salary_range.min.toLocaleString();
+      const maxStr = evaluation.salary_range.max > 0 ? evaluation.salary_range.max.toLocaleString() : '+';
+      const lvl = evaluation.seniority_label ? evaluation.seniority_label + ' · ' : '';
+      $('[data-role="salary-range"]').textContent = `${lvl}${cur} ${minStr} – ${maxStr}/${evaluation.salary_range.period || 'month'}`;
+      $('[data-role="salary-context"]').textContent = evaluation.salary_range.context || '';
+      salaryEl.hidden = false;
+    } else {
+      salaryEl.hidden = true;
+    }
+
     const bars = $('[data-role="category-bars"]');
     bars.replaceChildren(...Object.entries(evaluation.categories).map(([name, score]) => {
       const row = document.createElement('div');
@@ -272,14 +278,25 @@
     showScreen('evaluation');
   }
 
-  /* ---------- Summary screen ---------- */
-
   function renderSummary() {
     const summary = root.InterviewSession.getSummary();
     $('[data-role="summary-average"]').firstChild.nodeValue = String(summary.averageScore);
     $('[data-role="strongest-category"]').textContent = capitalize(summary.strongestCategory);
     $('[data-role="weakest-category"]').textContent = capitalize(summary.weakestCategory);
     $('[data-role="session-duration"]').textContent = formatDuration(summary.durationMs);
+
+    const lastEval = summary.questions.map((item) => item.evaluation).filter(Boolean).at(-1);
+    const salaryBox = $('[data-role="summary-salary-box"]');
+    if (lastEval?.salary_range) {
+      const cur = lastEval.salary_range.currency || 'EGP';
+      const lvl = lastEval.seniority_label ? lastEval.seniority_label + ' · ' : '';
+      const minStr = lastEval.salary_range.min.toLocaleString();
+      const maxStr = lastEval.salary_range.max > 0 ? lastEval.salary_range.max.toLocaleString() : '+';
+      $('[data-role="summary-salary-range"]').textContent = `${lvl}${cur} ${minStr}–${maxStr}`;
+      salaryBox.hidden = false;
+    } else {
+      salaryBox.hidden = true;
+    }
 
     const list = $('[data-role="summary-questions"]');
     list.replaceChildren(...summary.questions.map((item, index) => {
@@ -377,6 +394,12 @@
     lines.push('Session length: ' + formatDuration(summary.durationMs));
     lines.push('Strongest category: ' + capitalize(summary.strongestCategory));
     lines.push('Focus next: ' + capitalize(summary.weakestCategory));
+    const lastEval = summary.questions.map((item) => item.evaluation).filter(Boolean).at(-1);
+    if (lastEval?.salary_range) {
+      const cur = lastEval.salary_range.currency || 'EGP';
+      const lvl = lastEval.seniority_label ? lastEval.seniority_label + ' ' : '';
+      lines.push('Market bracket: ' + lvl + '(' + cur + ' ' + lastEval.salary_range.min.toLocaleString() + '–' + lastEval.salary_range.max.toLocaleString() + '/' + (lastEval.salary_range.period || 'month') + ')');
+    }
     lines.push('');
     summary.questions.forEach((item, index) => {
       lines.push('Q' + (index + 1) + ' (' + item.bestScore + '/100, ' + formatDuration(item.durationMs) + ')');
@@ -396,7 +419,7 @@
         toast('Summary copied to clipboard.', 'success');
         return;
       }
-    } catch (error) { /* fall through to legacy path */ }
+    } catch (error) {  }
     try {
       const ta = document.createElement('textarea');
       ta.value = text;
@@ -412,8 +435,6 @@
       toast('Copy not supported in this browser.', 'error');
     }
   }
-
-  /* ---------- Error screen ---------- */
 
   const ERROR_TAGS = {
     'auth-dismissed': 'Sign-in needed',
@@ -435,8 +456,6 @@
     $('[data-action="error-back"]').dataset.screen = back;
     showScreen('error');
   }
-
-  /* ---------- Settings dialog ---------- */
 
   function openSettings() {
     lastFocus = document.activeElement;
@@ -517,8 +536,6 @@
     openSettings();
     toast('Saved key removed.', 'success');
   }
-
-  /* ---------- Action handlers ---------- */
 
   async function startPractice() {
     const form = $('[data-role="setup-form"]');
@@ -612,8 +629,6 @@
     showScreen(target);
   }
 
-  /* ---------- Init ---------- */
-
   function init() {
     renderProviderChip();
     applyTheme(root.InterviewStorage.getTheme());
@@ -626,7 +641,11 @@
     answerInput.addEventListener('input', (event) => {
       const value = event.target.value;
       const count = words(value);
-      $('[data-role="word-count"]').textContent = count + ' word' + (count === 1 ? '' : 's');
+      const countEl = $('[data-role="word-count"]');
+      countEl.textContent = count + ' word' + (count === 1 ? '' : 's');
+      countEl.classList.toggle('is-optimal', count >= 30 && count <= 150);
+      countEl.classList.toggle('is-short', count > 0 && count < 30);
+      countEl.classList.toggle('is-long', count > 150);
       root.InterviewStorage.saveDraft(value);
     });
     answerInput.addEventListener('keydown', (event) => {
@@ -646,7 +665,6 @@
     $('[data-action="retry-operation"]').addEventListener('click', retryOp);
     $('[data-action="error-back"]').addEventListener('click', goBack);
 
-    /* Settings dialog */
     const settingsDialog = $('[data-role="settings-dialog"]');
     $$('[data-action="open-settings"]').forEach((button) => button.addEventListener('click', openSettings));
     $$('[data-action="close-settings"]').forEach((button) => button.addEventListener('click', closeSettings));
@@ -690,7 +708,6 @@
 
     $('[data-role="settings-form"]').addEventListener('submit', saveSettings);
 
-    /* Confirm dialog */
     const confirmDialogEl = $('[data-role="confirm-dialog"]');
     $('[data-action="confirm-cancel"]').addEventListener('click', () => closeConfirm(false));
     $('[data-action="confirm-ok"]').addEventListener('click', () => closeConfirm(true));
