@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/favicon.png" alt="Gahez logo" width="140">
+<img src="assets/logo.png" alt="Gahez logo" width="140">
 
 # Gahez
 
