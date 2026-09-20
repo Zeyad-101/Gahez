@@ -1,5 +1,6 @@
 <div align="center">
 
+<<<<<<< HEAD
 <img src="assets/logo.png" alt="Gahez logo" width="140">
 
 # Gahez
@@ -33,6 +34,39 @@ Puter needs no setup and works out of the box. Want a different model? Click the
 
 ## Mock mode
 
+=======
+# Gahez
+
+**Interview practice that adapts to you.**
+
+Pick a role. Answer five questions, one at a time. Get scored, specific feedback after each one — not generic encouragement.
+
+[**Try it live →**](https://gahez-zeta.vercel.app/)
+
+[![Live](https://img.shields.io/badge/live-gahez--zeta.vercel.app-1B362D?style=flat-square)](https://gahez-zeta.vercel.app/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-B8863C?style=flat-square)](LICENSE)
+
+</div>
+
+![Setup screen](screenshots/01-setup.png)
+
+---
+
+## What it does
+
+- **Questions tailored to your role** — PM, design, frontend, sales, marketing, ops, finance, HR, and more, each with its own question bank pulled from real day-to-day work rather than generic STAR prompts.
+- **Feedback you can act on** — every answer is scored across five categories (relevance, clarity, structure, specificity, confidence), paired with a worked example answer and the follow-up questions an interviewer would likely ask next.
+- **No account required** — Puter powers the AI by default at no cost to you. Prefer a different model? Add your own Anthropic, OpenAI, or Gemini key in Settings.
+- **Nothing leaves your browser that doesn't have to** — no backend, no analytics, no tracking scripts. Any key you add stays in the browser and is sent only to the provider you chose.
+- **Built for whatever screen you're on** — the layout adjusts across phone, tablet, and desktop, touch targets are sized for fingers rather than cursors, and `Ctrl+Enter` submits an answer from the keyboard.
+
+## Bring your own key
+
+Puter needs no setup and works out of the box. Want a different model? Click the gear icon, pick a provider, paste in a key. "Remember on this device" is off by default — leave it that way and the key only lives for the current tab.
+
+## Mock mode
+
+>>>>>>> ba49b3ee1a247c2cdb06fc1263b8625a6653cacd
 Add `?mock=1` to the URL to try the interface with canned responses instead of live AI calls — a quick look around without touching your API usage.
 
 ## Architecture
