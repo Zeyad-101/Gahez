@@ -1,6 +1,5 @@
 <div align="center">
 
-<<<<<<< HEAD
 <img src="assets/logo.png" alt="Gahez logo" width="140">
 
 # Gahez
